@@ -1,0 +1,35 @@
+{
+  "id": "2c6c94a6-b193-448e-a392-d366531e64f4",
+  "name": "Codeunits",
+  "publisher": "Dennis Appelt",
+  "version": "21.1.2023041801.2023041801",
+  "brief": "",
+  "description": "",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [    {
+    "id": "3c4d2308-e1f4-4510-b79f-8815e9ad205e",
+    "name": "Tables",
+    "publisher": "Dennis Appelt",
+    "version": "1.0.1.4"
+  }],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "20.0.0.0",
+  "idRanges": [
+    {
+      "from": 50000,
+      "to": 99999
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": false
+  },
+  "features": ["NoImplicitWith"],
+  "runtime": "9.0"
+}
