@@ -113,6 +113,7 @@ Codeunit 50003 Mailfunktionen
                             PurchRcptLine.SetFilter("Document No.", MailTabelle.Key1);
                             // G-ERP.AG 2020-09-07          PurchRcptLine.SETRANGE(Type,PurchRcptLine.Type::Item);
                             PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
+                            PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");    // TT CN 2023-07-23
                             PurchRcptLine.SetFilter(Quantity, '<>%1', 0);
                             if PurchRcptLine.FindSet then begin
                                 MailMsg.AppendToBody(StrSubstNo('<b>Folgende Artikel aus Bestellung %1/%2 wurden geliefert:</b></br></br>',
@@ -134,7 +135,8 @@ Codeunit 50003 Mailfunktionen
                                 PurchaseLine.SetRange("Document Type", PurchaseLine."document type"::Order);
                                 PurchaseLine.SetFilter("Document No.", PurchRcptHeader."Order No.");
                                 // G-ERP.AG 2020-09-07            PurchaseLine.SETRANGE(Type,PurchaseLine.Type::Item);
-                                PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
+                                // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
+                                PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");     // TT CN 2023-07-23
                                 PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);  // G-ERP.AG 2021-05-17  Anfrage# 2311352
                                 PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
                                 if PurchaseLine.FindSet then begin
