@@ -7,11 +7,11 @@ Codeunit 50003 Mailfunktionen
         case rec."Parameter String" of
             'Lieferung':
                 begin
-                    MailSenden(38);
+                    MailSenden(120);
                 end;
             'Verzug':
                 begin
-                    MailSenden(120);
+                    MailSenden(38);
                 end;
             '2':
                 begin
