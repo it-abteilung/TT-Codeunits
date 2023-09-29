@@ -33,12 +33,13 @@ Codeunit 50003 Mailfunktionen
         Recipient: Enum "Email Recipient Type";
     begin
         Clear(MailTabelle);
-        MailTabelle.SetRange(Sendedatum, CreateDatetime(0D, 0T));
-        if MailTabelle.FindSet then
+        // MailTabelle.SetRange(Sendedatum, CreateDatetime(0D, 0T));
+        MailTabelle.SetRange(TableID, TableId_L);
+        if MailTabelle.FindLast() then
             repeat
-                if MailTabelle.TableID = TableId_L then begin
+                if (TableId_L = 38) AND (MailTabelle.TableID = TableId_L) then begin
                     MailMsg.Create(
-                            MailTabelle.Empfängermail,
+                            MailTabelle."Empfängermail",
                             MailTabelle.Betreff,
                             '',
                             true);
@@ -99,103 +100,105 @@ Codeunit 50003 Mailfunktionen
                     MailTabelle.Modify;
 
                     Commit(); //G-ERP.RS 2021-09-10
-                end else
-                    if MailTabelle.TableID = TableId_L then begin
-                        MailMsg.Create(
-                                MailTabelle.Empfängermail,
-                                MailTabelle.Betreff,
-                                '',
-                                true);
-                        if MailTabelle."CC Mail" <> '' then
-                            MailMsg.SetRecipients(Recipient::Cc, MailTabelle."CC Mail");
-                        if MailTabelle."BCC Mail" <> '' then
-                            MailMsg.SetRecipients(Recipient::Bcc, MailTabelle."CC Mail");
-                        if MailTabelle.Body <> '' then
-                            MailMsg.AppendToBody(MailTabelle.Body + '</br>');
-                        if PurchRcptHeader.Get(MailTabelle.Key1) then;
-                        Clear(PurchRcptLine);
-                        PurchRcptLine.SetFilter("Document No.", MailTabelle.Key1);
-                        // G-ERP.AG 2020-09-07          PurchRcptLine.SETRANGE(Type,PurchRcptLine.Type::Item);
-                        PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
-                        PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");    // TT CN 2023-07-23
-                        PurchRcptLine.SetFilter(Quantity, '<>%1', 0);
-                        if PurchRcptLine.FindSet then begin
-                            MailMsg.AppendToBody(StrSubstNo('<b>Folgende Artikel aus Bestellung %1/%2 wurden geliefert:</b></br></br>', PurchRcptLine."Job No.", PurchRcptHeader."Order No."));
-                            MailMsg.AppendToBody('<style>* {font-family: "Segoe UI", "Segoe WP", Segoe, device-segoe, Tahoma, Helvetica, Arial, sans-serif !important;font-weight: normal !important;font-style: normal !important;text-transform: none !important;}Table {font-family: Arial, Helvetica, sans-serif;background-color: #FFFFFF;border-collapse: collapse;width: 100%;table-layout: fixed;}Table td, Table th {  border-bottom: 1px solid #333;padding: 3px 12px;}Table th {  font-size: 15px;font-weight: bold;padding-top: 12px;padding-bottom: 12px;padding-left: 12px;text-align: left;background-color: #FFFFFF;}thead tr th:first-child, tbody tr td:first-child {max-width: 20px;pref-width: 20px;}</style>');
-                            MailMsg.AppendToBody('<table><tr><th>Beschreibung</th><th>Menge</th><th>Einheit</th></tr>'); // 24.07.23 TT CN
-                            repeat
-                                if PurchRcptLine.Pos <> PosNr then begin
-                                    if PurchRcptLine.Pos <> '0' then
-                                        // MailMsg.AppendToBody(StrSubstNo('<u>Pos %1</u></br>', PurchaseRcptLine.Pos));
-                                        MailMsg.AppendToBody(StrSubstNo('<tr><td><u>Pos %1</u></td><td></td><td></td></tr>', PurchRcptLine.Pos)); // 24.07.23 TT CN
-                                    PosNr := PurchRcptLine.Pos;
-                                end;
-                                MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchRcptLine.Description, Format(PurchRcptLine.Quantity), PurchRcptLine."Unit of Measure")); // 24.07.23 TT CN
-                            until PurchRcptLine.Next = 0;
-                            MailMsg.AppendToBody('</table>');// 24.07.23 TT CN
-                        end;
-                        if PurchRcptHeader.Get(MailTabelle.Key1) then begin
-                            PosNr := '';
-                            Clear(PurchaseLine);
-                            PurchaseLine.SetRange("Document Type", PurchaseLine."document type"::Order);
-                            PurchaseLine.SetFilter("Document No.", PurchRcptHeader."Order No.");
-                            // G-ERP.AG 2020-09-07            PurchaseLine.SETRANGE(Type,PurchaseLine.Type::Item);
-                            // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
-                            PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");     // TT CN 2023-07-23
-                            PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);  // G-ERP.AG 2021-05-17  Anfrage# 2311352
-                            PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
-                            if PurchaseLine.FindSet then begin
-                                MailMsg.AppendToBody(StrSubstNo('</br></br><b>Folgende Artikel aus Bestellung %1 wurden nicht geliefert:</b></br></br>', MailTabelle.Key1));
-                                MailMsg.AppendToBody('<style>* {font-family: "Segoe UI", "Segoe WP", Segoe, device-segoe, Tahoma, Helvetica, Arial, sans-serif !important;font-weight: normal !important;font-style: normal !important;text-transform: none !important;}Table {font-family: Arial, Helvetica, sans-serif;background-color: #FFFFFF;border-collapse: collapse;width: 100%;table-layout: fixed;}Table td, Table th {  border-bottom: 1px solid #333;padding: 3px 12px;}Table th {  font-size: 15px;font-weight: bold;padding-top: 12px;padding-bottom: 12px;padding-left: 12px;text-align: left;background-color: #FFFFFF;}thead tr th:first-child, tbody tr td:first-child {max-width: 20px;pref-width: 20px;}</style>');
-                                MailMsg.AppendToBody('<table><tr><th>Beschreibung</th><th>Restmenge</th><th>Einheit</th></tr>'); // 24.07.23 TT CN
-                                repeat
-                                    if PurchaseLine.Pos <> PosNr then begin
-                                        if PurchaseLine.Pos <> '0' then
-                                            // MailMsg.AppendToBody(StrSubstNo('<u>Pos %1</u></br>', PurchaseLine.Pos));
-                                            MailMsg.AppendToBody(StrSubstNo('<tr><td><u>Pos %1</u></td><td></td><td></td></tr>', PurchaseLine.Pos)); // 24.07.23 TT CN
-                                        PosNr := PurchaseLine.Pos;
-                                    end;
-                                    MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchaseLine.Description, Format(PurchaseLine."Outstanding Quantity"), PurchaseLine."Unit of Measure")); // 24.07.23 TT CN
-                                until PurchaseLine.Next = 0;
-                                MailMsg.AppendToBody('</table>');
+                end;
+
+                if (TableId_L = 120) AND (MailTabelle.TableID = TableId_L) then begin
+                    MailMsg.Create(
+                            MailTabelle."Empfängermail",
+                            MailTabelle.Betreff,
+                            '',
+                            true);
+                    if MailTabelle."CC Mail" <> '' then
+                        MailMsg.SetRecipients(Recipient::Cc, MailTabelle."CC Mail");
+                    if MailTabelle."BCC Mail" <> '' then
+                        MailMsg.SetRecipients(Recipient::Bcc, MailTabelle."CC Mail");
+                    if MailTabelle.Body <> '' then
+                        MailMsg.AppendToBody(MailTabelle.Body + '</br>');
+                    if PurchRcptHeader.Get(MailTabelle.Key1) then;
+                    Clear(PurchRcptLine);
+                    PurchRcptLine.SetFilter("Document No.", MailTabelle.Key1);
+                    // G-ERP.AG 2020-09-07          PurchRcptLine.SETRANGE(Type,PurchRcptLine.Type::Item);
+                    // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
+                    PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");    // TT CN 2023-07-23
+                    PurchRcptLine.SetFilter(Quantity, '<>%1', 0);
+                    if PurchRcptLine.FindSet then begin
+                        MailMsg.AppendToBody(StrSubstNo('<b>Folgende Artikel aus Bestellung %1/%2 wurden geliefert:</b></br></br>', PurchRcptLine."Job No.", PurchRcptHeader."Order No."));
+                        MailMsg.AppendToBody('<style>* {font-family: "Segoe UI", "Segoe WP", Segoe, device-segoe, Tahoma, Helvetica, Arial, sans-serif !important;font-weight: normal !important;font-style: normal !important;text-transform: none !important;}Table {font-family: Arial, Helvetica, sans-serif;background-color: #FFFFFF;border-collapse: collapse;width: 100%;table-layout: fixed;}Table td, Table th {  border-bottom: 1px solid #333;padding: 3px 12px;}Table th {  font-size: 15px;font-weight: bold;padding-top: 12px;padding-bottom: 12px;padding-left: 12px;text-align: left;background-color: #FFFFFF;}thead tr th:first-child, tbody tr td:first-child {max-width: 20px;pref-width: 20px;}</style>');
+                        MailMsg.AppendToBody('<table><tr><th>Beschreibung</th><th>Menge</th><th>Einheit</th></tr>'); // 24.07.23 TT CN
+                        repeat
+                            if PurchRcptLine.Pos <> PosNr then begin
+                                if PurchRcptLine.Pos <> '0' then
+                                    // MailMsg.AppendToBody(StrSubstNo('<u>Pos %1</u></br>', PurchaseRcptLine.Pos));
+                                    MailMsg.AppendToBody(StrSubstNo('<tr><td><u>Pos %1</u></td><td></td><td></td></tr>', PurchRcptLine.Pos)); // 24.07.23 TT CN
+                                PosNr := PurchRcptLine.Pos;
                             end;
-                        end;
-                        SMTP.Send(MailMsg);
-                        MailTabelle.Sendedatum := CurrentDatetime;
-                        MailTabelle.Modify;
-
-                        Commit(); //G-ERP.RS 2021-09-10
-
-                    end
-                    else begin
-                        MailMsg.Create(
-                                MailTabelle.Empfängermail,
-                                MailTabelle.Betreff,
-                                '',
-                                true);
-                        if MailTabelle.Body <> '' then
-                            MailMsg.AppendToBody(MailTabelle.Body);
-                        /*
-                        IF MailTabelle.Body2 <> '' THEN
-                          SMTP.AppendBody(MailTabelle.Body2);
-                        IF MailTabelle.Body3 <> '' THEN
-                          SMTP.AppendBody(MailTabelle.Body3);
-                        IF MailTabelle.Body4 <> '' THEN
-                          SMTP.AppendBody(MailTabelle.Body4);
-                        IF MailTabelle.Body5 <> '' THEN
-                          SMTP.AppendBody(MailTabelle.Body5);
-                        */
-                        if MailTabelle."CC Mail" <> '' then
-                            MailMsg.SetRecipients(Recipient::Cc, MailTabelle."CC Mail");
-                        if MailTabelle."BCC Mail" <> '' then
-                            MailMsg.SetRecipients(Recipient::Bcc, MailTabelle."CC Mail");
-                        //         IF FILE.EXISTS(MailTabelle.Dateiname) THEN
-                        //          SMTP.AddAttachment(MailTabelle.Dateiname);
-                        SMTP.Send(MailMsg);
-                        MailTabelle.Sendedatum := CurrentDatetime;
-                        MailTabelle.Modify;
-                        Commit(); //G-ERP.RS 2021-09-10
+                            MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchRcptLine.Description, Format(PurchRcptLine.Quantity), PurchRcptLine."Unit of Measure")); // 24.07.23 TT CN
+                        until PurchRcptLine.Next = 0;
+                        MailMsg.AppendToBody('</table>');// 24.07.23 TT CN
                     end;
+                    if PurchRcptHeader.Get(MailTabelle.Key1) then begin
+                        PosNr := '';
+                        Clear(PurchaseLine);
+                        PurchaseLine.SetRange("Document Type", PurchaseLine."document type"::Order);
+                        PurchaseLine.SetFilter("Document No.", PurchRcptHeader."Order No.");
+                        // G-ERP.AG 2020-09-07            PurchaseLine.SETRANGE(Type,PurchaseLine.Type::Item);
+                        // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
+                        PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");     // TT CN 2023-07-23
+                        PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);  // G-ERP.AG 2021-05-17  Anfrage# 2311352
+                        PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
+                        if PurchaseLine.FindSet then begin
+                            MailMsg.AppendToBody(StrSubstNo('</br></br><b>Folgende Artikel aus Bestellung %1 wurden nicht geliefert:</b></br></br>', MailTabelle.Key1));
+                            MailMsg.AppendToBody('<style>* {font-family: "Segoe UI", "Segoe WP", Segoe, device-segoe, Tahoma, Helvetica, Arial, sans-serif !important;font-weight: normal !important;font-style: normal !important;text-transform: none !important;}Table {font-family: Arial, Helvetica, sans-serif;background-color: #FFFFFF;border-collapse: collapse;width: 100%;table-layout: fixed;}Table td, Table th {  border-bottom: 1px solid #333;padding: 3px 12px;}Table th {  font-size: 15px;font-weight: bold;padding-top: 12px;padding-bottom: 12px;padding-left: 12px;text-align: left;background-color: #FFFFFF;}thead tr th:first-child, tbody tr td:first-child {max-width: 20px;pref-width: 20px;}</style>');
+                            MailMsg.AppendToBody('<table><tr><th>Beschreibung</th><th>Restmenge</th><th>Einheit</th></tr>'); // 24.07.23 TT CN
+                            repeat
+                                if PurchaseLine.Pos <> PosNr then begin
+                                    if PurchaseLine.Pos <> '0' then
+                                        // MailMsg.AppendToBody(StrSubstNo('<u>Pos %1</u></br>', PurchaseLine.Pos));
+                                        MailMsg.AppendToBody(StrSubstNo('<tr><td><u>Pos %1</u></td><td></td><td></td></tr>', PurchaseLine.Pos)); // 24.07.23 TT CN
+                                    PosNr := PurchaseLine.Pos;
+                                end;
+                                MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchaseLine.Description, Format(PurchaseLine."Outstanding Quantity"), PurchaseLine."Unit of Measure")); // 24.07.23 TT CN
+                            until PurchaseLine.Next = 0;
+                            MailMsg.AppendToBody('</table>');
+                        end;
+                    end;
+                    SMTP.Send(MailMsg);
+                    MailTabelle.Sendedatum := CurrentDatetime;
+                    MailTabelle.Modify;
+
+                    Commit(); //G-ERP.RS 2021-09-10
+
+                end;
+
+                if NOT ((TableId_L = 38) OR (TableId_L = 120)) then begin
+                    MailMsg.Create(
+                            MailTabelle.Empfängermail,
+                            MailTabelle.Betreff,
+                            '',
+                            true);
+                    if MailTabelle.Body <> '' then
+                        MailMsg.AppendToBody(MailTabelle.Body);
+                    /*
+                    IF MailTabelle.Body2 <> '' THEN
+                      SMTP.AppendBody(MailTabelle.Body2);
+                    IF MailTabelle.Body3 <> '' THEN
+                      SMTP.AppendBody(MailTabelle.Body3);
+                    IF MailTabelle.Body4 <> '' THEN
+                      SMTP.AppendBody(MailTabelle.Body4);
+                    IF MailTabelle.Body5 <> '' THEN
+                      SMTP.AppendBody(MailTabelle.Body5);
+                    */
+                    if MailTabelle."CC Mail" <> '' then
+                        MailMsg.SetRecipients(Recipient::Cc, MailTabelle."CC Mail");
+                    if MailTabelle."BCC Mail" <> '' then
+                        MailMsg.SetRecipients(Recipient::Bcc, MailTabelle."CC Mail");
+                    //         IF FILE.EXISTS(MailTabelle.Dateiname) THEN
+                    //          SMTP.AddAttachment(MailTabelle.Dateiname);
+                    SMTP.Send(MailMsg);
+                    // MailTabelle.Sendedatum := CurrentDatetime;
+                    MailTabelle.Modify;
+                    Commit(); //G-ERP.RS 2021-09-10
+                end;
             until MailTabelle.Next = 0;
     end;
 
