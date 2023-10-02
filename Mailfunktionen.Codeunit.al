@@ -33,9 +33,9 @@ Codeunit 50003 Mailfunktionen
         Recipient: Enum "Email Recipient Type";
     begin
         Clear(MailTabelle);
-        // MailTabelle.SetRange(Sendedatum, CreateDatetime(0D, 0T));
+        MailTabelle.SetRange(Sendedatum, CreateDatetime(0D, 0T));
         MailTabelle.SetRange(TableID, TableId_L);
-        if MailTabelle.FindLast() then
+        if MailTabelle.FindSet() then
             repeat
                 if (TableId_L = 38) AND (MailTabelle.TableID = TableId_L) then begin
                     MailMsg.Create(
@@ -195,7 +195,7 @@ Codeunit 50003 Mailfunktionen
                     //         IF FILE.EXISTS(MailTabelle.Dateiname) THEN
                     //          SMTP.AddAttachment(MailTabelle.Dateiname);
                     SMTP.Send(MailMsg);
-                    // MailTabelle.Sendedatum := CurrentDatetime;
+                    MailTabelle.Sendedatum := CurrentDatetime;
                     MailTabelle.Modify;
                     Commit(); //G-ERP.RS 2021-09-10
                 end;
