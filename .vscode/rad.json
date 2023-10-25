@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 ﻿{"Added":[],"Modified":[{"Id":50015,"Kind":15,"Name":"Payment Import"},{"Kind":106,"Name":"RequestOptionsPage","Namespace":""},{"Id":50003,"Kind":11,"Name":"Mailfunktionen"},{"Id":82002,"Kind":11,"Name":"CRMPlus Functions"},{"Id":50006,"Kind":11,"Name":"AC Functions"}],"Removed":[]}
+=======
+﻿{"Added":[],"Modified":[{"Id":50003,"Kind":11,"Name":"Mailfunktionen","PackagePath":"/src/Mailfunktionen.Codeunit.al"}],"Removed":[]}
+>>>>>>> e113631c7d321d49d1507692474c2f1850e2822b
