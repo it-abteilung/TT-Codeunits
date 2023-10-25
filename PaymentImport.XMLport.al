@@ -187,18 +187,20 @@ XmlPort 50015 "Payment Import"
                             end;
                         until PurchInvHeader.Next = 0;
                     end else begin
-                        "Gen. Journal Line"."Line No." := LineNo;
-                        "Gen. Journal Line"."Account Type" := "Gen. Journal Line"."account type"::Vendor;
-                        Vendor.SetRange(DATEV, AccNo);
-                        if Vendor.FindFirst() then
-                            "Gen. Journal Line".Validate("Account No.", Vendor."No.")
-                        else
-                            "Gen. Journal Line".Validate("Account No.", AccNo);
-                        "Gen. Journal Line"."Bal. Account Type" := "Gen. Journal Line"."bal. account type"::"G/L Account";
-                        "Gen. Journal Line"."Applies-to Doc. Type" := "Gen. Journal Line"."applies-to doc. type"::Invoice;
-                        "Gen. Journal Line"."Applies-to Doc. No." := '';
-                        "Gen. Journal Line"."External Document No." := VendInvoiceNo;
-                        LineNo += 10000;
+                        if (BlankX = 'RE') or (BlankX = 'ZV') then begin
+                            "Gen. Journal Line"."Line No." := LineNo;
+                            "Gen. Journal Line"."Account Type" := "Gen. Journal Line"."account type"::Vendor;
+                            Vendor.SetRange(DATEV, AccNo);
+                            if Vendor.FindFirst() then
+                                "Gen. Journal Line".Validate("Account No.", Vendor."No.")
+                            else
+                                "Gen. Journal Line".Validate("Account No.", AccNo);
+                            "Gen. Journal Line"."Bal. Account Type" := "Gen. Journal Line"."bal. account type"::"G/L Account";
+                            "Gen. Journal Line"."Applies-to Doc. Type" := "Gen. Journal Line"."applies-to doc. type"::Invoice;
+                            "Gen. Journal Line"."Applies-to Doc. No." := '';
+                            "Gen. Journal Line"."External Document No." := VendInvoiceNo;
+                            LineNo += 10000;
+                        end;
                     end;
 
                     PurchCrMemoHdr.SetCurrentkey("Vendor Cr. Memo No.", "Posting Date");
@@ -218,20 +220,22 @@ XmlPort 50015 "Payment Import"
                             LineNo += 10000;
                         until PurchCrMemoHdr.Next = 0;
                     end else begin
-                        "Gen. Journal Line"."Line No." := LineNo;
-                        "Gen. Journal Line"."Account Type" := "Gen. Journal Line"."account type"::Vendor;
-                        Vendor.SetRange(DATEV, AccNo);
-                        if Vendor.FindFirst() then
-                            "Gen. Journal Line".Validate("Account No.", Vendor."No.")
-                        else
-                            "Gen. Journal Line".Validate("Account No.", AccNo);
-                        "Gen. Journal Line"."Bal. Account Type" := "Gen. Journal Line"."bal. account type"::"G/L Account";
-                        "Gen. Journal Line"."Applies-to Doc. Type" := "Gen. Journal Line"."applies-to doc. type"::"Credit Memo";
-                        "Gen. Journal Line"."Applies-to Doc. No." := '';
-                        "Gen. Journal Line"."External Document No." := VendInvoiceNo;
-                        "Gen. Journal Line".validate(Amount, ("Gen. Journal Line".Amount * (-1)));
-                        "Gen. Journal Line"."Currency Code" := PurchCrMemoHdr."Currency Code";
-                        LineNo += 10000;
+                        if BlankX = 'GS' then begin
+                            "Gen. Journal Line"."Line No." := LineNo;
+                            "Gen. Journal Line"."Account Type" := "Gen. Journal Line"."account type"::Vendor;
+                            Vendor.SetRange(DATEV, AccNo);
+                            if Vendor.FindFirst() then
+                                "Gen. Journal Line".Validate("Account No.", Vendor."No.")
+                            else
+                                "Gen. Journal Line".Validate("Account No.", AccNo);
+                            "Gen. Journal Line"."Bal. Account Type" := "Gen. Journal Line"."bal. account type"::"G/L Account";
+                            "Gen. Journal Line"."Applies-to Doc. Type" := "Gen. Journal Line"."applies-to doc. type"::"Credit Memo";
+                            "Gen. Journal Line"."Applies-to Doc. No." := '';
+                            "Gen. Journal Line"."External Document No." := VendInvoiceNo;
+                            "Gen. Journal Line".validate(Amount, ("Gen. Journal Line".Amount * (-1)));
+                            "Gen. Journal Line"."Currency Code" := PurchCrMemoHdr."Currency Code";
+                            LineNo += 10000;
+                        end;
                     end;
 
                     "Gen. Journal Line"."Bal. Gen. Posting Type" := "Gen. Journal Line"."bal. gen. posting type"::" ";
