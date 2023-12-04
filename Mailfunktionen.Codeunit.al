@@ -55,7 +55,7 @@ Codeunit 50003 Mailfunktionen
                     PurchaseLine.SetFilter("Document No.", MailTabelle.Key2);
                     PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);
                     PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
-                    PurchaseLine.SetFilter("No.", '<> %1', '999900');
+                         PurchaseLine.SetFilter("No.", '<> %1 | <> %2','980000', '999900');
                     if PurchaseLine.FindSet then begin
                         /*
                         IF PurchaseLine."Promised Receipt Date" <> 0D THEN
@@ -146,7 +146,7 @@ Codeunit 50003 Mailfunktionen
                         // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
                         PurchRcptLine.SetFilter(Type, '%1|%2|%3', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)", PurchRcptLine.Type::"G/L Account");     // TT CN 2023-07-23
                         PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);  // G-ERP.AG 2021-05-17  Anfrage# 2311352
-                        PurchaseLine.SetFilter("No.", '<> %1', '999900');
+                   PurchaseLine.SetFilter("No.", '<> %1 | <> %2','980000', '999900');
                         PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
                         if PurchaseLine.FindSet then begin
                             MailMsg.AppendToBody(StrSubstNo('</br></br><b>Folgende Artikel aus Bestellung %1 wurden nicht geliefert:</b></br></br>', MailTabelle.Key1));
@@ -257,7 +257,7 @@ Codeunit 50003 Mailfunktionen
         l_PurchaseLine.SetRange("Document No.", PurchRcptHeader."Order No.");
         l_PurchaseLine.SetRange(Type, l_PurchaseLine.Type::Item);
         l_PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
-        l_PurchaseLine.SetFilter("No.", '<> %1', '999900');
+        l_PurchaseLine.SetFilter("No.", '<> %1 | <> %2','980000', '999900');
         if l_PurchaseLine.FindFirst then
             //  MailTabelle.Betreff := STRSUBSTNO('TEILLIEFERUNG Bestellung %1/%2',PurchRcptHeader."Job No.",PurchRcptHeader."Order No.")
             MailTabelle.Betreff := StrSubstNo('%1 : TEILLIEFERUNG von %2 eingetroffen', PurchRcptHeader."Job No.",
@@ -351,7 +351,7 @@ Codeunit 50003 Mailfunktionen
         L_PurchaseLine.SetRange(Type, L_PurchaseLine.Type::Item);
         L_PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
         L_PurchaseLine.SetRange("Promised Receipt Date", 0D);
-        l_PurchaseLine.SetFilter("No.", '<> %1', '999900');
+                l_PurchaseLine.SetFilter("No.", '<> %1 | <> %2','980000', '999900');
         // G-ERP.AG 20181107 L_PurchaseLine.SETFILTER("Planned Receipt Date",'%1..%2',20160101D,CALCDATE('<-1D>',TODAY));
         L_PurchaseLine.SetFilter("Planned Receipt Date", '%1..%2', 20160101D, Today);                             // G-ERP.AG 20181107
         if L_PurchaseLine.FindSet then begin
