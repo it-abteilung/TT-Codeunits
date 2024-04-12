@@ -31,7 +31,9 @@ Codeunit 50003 Mailfunktionen
         MailMsg: Codeunit "EMail Message";
         PosNr: Code[20];
         Recipient: Enum "Email Recipient Type";
+        SendFlag: Boolean;
     begin
+        SendFlag := false;
         Clear(MailTabelle);
         MailTabelle.SetRange(Sendedatum, CreateDatetime(0D, 0T));
         MailTabelle.SetRange(TableID, TableId_L);
@@ -95,8 +97,11 @@ Codeunit 50003 Mailfunktionen
                             MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchaseLine.Description, Format(PurchaseLine."Outstanding Quantity"), PurchaseLine."Unit of Measure")); // 24.07.23 TT CN
                         until PurchaseLine.Next = 0;
                         MailMsg.AppendToBody('</table>'); // 24.07.23 TT CN
+                        SendFlag := true;
                     end;
-                    SMTP.Send(MailMsg);
+                    if SendFlag then begin
+                        SMTP.Send(MailMsg);
+                    end;
                     MailTabelle.Sendedatum := CurrentDatetime;
                     MailTabelle.Modify;
 
@@ -120,7 +125,7 @@ Codeunit 50003 Mailfunktionen
                     PurchRcptLine.SetFilter("Document No.", MailTabelle.Key1);
                     // G-ERP.AG 2020-09-07          PurchRcptLine.SETRANGE(Type,PurchRcptLine.Type::Item);
                     // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
-                    PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"G/L Account");    // TT CN 2023-07-23
+                    PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"G/L Account");    // TT CN 2023-07-23                                                                                         pe::"G/L Account");    // TT CN 2023-07-23
                     PurchRcptLine.SetFilter(Quantity, '<>%1', 0);
                     if PurchRcptLine.FindSet then begin
                         MailMsg.AppendToBody(StrSubstNo('<b>Folgende Artikel aus Bestellung %1/%2 wurden geliefert:</b></br></br>', PurchRcptLine."Job No.", PurchRcptHeader."Order No."));
@@ -136,6 +141,7 @@ Codeunit 50003 Mailfunktionen
                             MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchRcptLine.Description, Format(PurchRcptLine.Quantity), PurchRcptLine."Unit of Measure")); // 24.07.23 TT CN
                         until PurchRcptLine.Next = 0;
                         MailMsg.AppendToBody('</table>');// 24.07.23 TT CN
+                        SendFlag := true;
                     end;
                     if PurchRcptHeader.Get(MailTabelle.Key1) then begin
                         PosNr := '';
@@ -162,14 +168,16 @@ Codeunit 50003 Mailfunktionen
                                 MailMsg.AppendToBody(StrSubstNo('<tr><td>%1</td><td>%2</td><td>%3</td></tr>', PurchaseLine.Description, Format(PurchaseLine."Outstanding Quantity"), PurchaseLine."Unit of Measure")); // 24.07.23 TT CN
                             until PurchaseLine.Next = 0;
                             MailMsg.AppendToBody('</table>');
+                            SendFlag := true;
                         end;
                     end;
-                    SMTP.Send(MailMsg);
+                    if SendFlag then begin
+                        SMTP.Send(MailMsg);
+                    end;
                     MailTabelle.Sendedatum := CurrentDatetime;
                     MailTabelle.Modify;
 
                     Commit(); //G-ERP.RS 2021-09-10
-
                 end;
 
                 if NOT ((TableId_L = 38) OR (TableId_L = 120)) then begin

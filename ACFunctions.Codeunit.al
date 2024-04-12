@@ -1082,5 +1082,33 @@ Codeunit 50006 "AC Functions"
     begin
         ShouldUpdateItemReference := false;
     end;
-}
 
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Undo Posting Management", 'OnBeforeUndoValuePostingFromJob', '', true, true)]
+    // local procedure OnBeforeUndoValuePostingFromJob(var ItemJournalLine: Record "Item Journal Line"; var IsHandled: Boolean)
+    // begin
+    //     IsHandled := true;
+    // end;
+
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Undo Purchase Receipt Line", 'OnPostItemJnlLineOnBeforeUndoValuePostingWithJob', '', true, true)]
+    // local procedure SkipUndoValuePostingWithJob(PurchRcptHeader: Record "Purch. Rcpt. Header"; PurchRcptLine: Record "Purch. Rcpt. Line"; var ItemJnlLine: Record "Item Journal Line"; var IsHandled: Boolean)
+    // begin
+    //     IsHandled := true;
+    // end;
+
+    [EventSubscriber(ObjectType::Table, Database::Contact, 'OnAfterCreateCustomer', '', true, true)]
+    local procedure AfterCreateCustomer(var Contact: Record Contact; var Customer: Record Customer)
+    begin
+        if Contact."Country/Region Code" <> '' then begin
+            Customer."Country/Region Code" := Contact."Country/Region Code";
+        end;
+        Customer.DATEV := Contact.DATEV;
+        Customer.Modify();
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::Contact, 'OnBeforeCreateCustomerFromTemplate', '', true, true)]
+    local procedure BeforeCreateCustomerFromTemplate(var Contact: Record Contact; var CustNo: Code[20]; var IsHandled: Boolean; CustomerTemplate: Code[20]; HideValidationDialog: Boolean)
+    begin
+        Contact.Testfield(Name);
+        Contact.TestField(DATEV);
+    end;
+}
