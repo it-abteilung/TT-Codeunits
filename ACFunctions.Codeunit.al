@@ -98,10 +98,9 @@ Codeunit 50006 "AC Functions"
         if PurchaseHeader.Invoice then begin
             PurchaseHeader.TestField(Leistungszeitraum);
             PurchaseHeader.TestField(Leistungsart);
-
             PurchLine.SetRange("Document Type", PurchaseHeader."Document Type");
             PurchLine.SetRange("Document No.", PurchaseHeader."No.");
-            PurchLine.SetRange(Type, PurchLine.Type::"Charge (Item)", PurchLine.Type::Resource);
+            PurchLine.SetFilter(Type, '<>%1', PurchLine.Type::" ");
             if PurchLine.FindSet() then
                 repeat
                     PurchLine.TestField(Leistungsart);
@@ -282,12 +281,18 @@ Codeunit 50006 "AC Functions"
     local procedure CreateJobTaskOnBeforeInsert(RunTrigger: Boolean; var Rec: Record Job)
     var
         JobTask: Record "Job Task";
+        JobTask2_L: Record "Job Task";
     begin
-        JobTask.Init();
-        JobTask."Job No." := rec."No.";
-        JobTask."Job Task No." := '';
-        JobTask."Job Task Type" := "Job Task Type"::Posting;
-        JobTask.Insert(false);
+        JobTask2_L.SetRange("Job No.", Rec."No.");
+        JobTask2_L.SetRange("Job Task No.", '');
+        JobTask2_L.SetRange("Job Task Type", JobTask2_L."Job Task Type"::Posting);
+        if NOT JobTask2_L.FindFirst() then begin
+            JobTask.Init();
+            JobTask."Job No." := rec."No.";
+            JobTask."Job Task No." := '';
+            JobTask."Job Task Type" := "Job Task Type"::Posting;
+            JobTask.Insert(false);
+        end
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Job Jnl.-Post Line", 'OnCheckJobOnBeforeTestJobTaskType', '', false, false)]
@@ -1110,5 +1115,35 @@ Codeunit 50006 "AC Functions"
     begin
         Contact.Testfield(Name);
         Contact.TestField(DATEV);
+    end;
+
+    [EventSubscriber(ObjectType::Report, Report::"Calculate Bins", 'OnBeforeBinCreateWksh', '', true, true)]
+    local procedure BeforeBinCreateWksh(var BinCreationWorksheetLine: Record "Bin Creation Worksheet Line"; BinTemplate: Record "Bin Template")
+    begin
+        // BinCreationWorksheetLine.Description := BinTemplate.Description;
+        // BinCreationWorksheetLine.Modify();
+        // Message('%1', BinTemplate);
+    end;
+
+    [EventSubscriber(ObjectType::Page, Page::"Purchase Credit Memo", 'OnPostDocumentBeforeNavigateAfterPosting', '', false, false)]
+    local procedure PostDocumentBeforeNavigateAfterPosting(var PurchaseHeader: Record "Purchase Header"; var PostingCodeunitID: Integer; var Navigate: Enum "Navigate After Posting"; DocumentIsPosted: Boolean; var IsHandled: Boolean)
+    var
+        PurchaseHeader_L: Record "Purchase Header";
+    begin
+        // Bei einem Fehler wird trotzdem ein neuer Beleg erstellt, dies sollte nicht geschehen. Kein anderer Subscriber steht zur Verfügung. 
+        // PurchaseHeader_L.Init();
+        // PurchaseHeader_L."Document Type" := PurchaseHeader_L."Document Type"::Order;
+        // PurchaseHeader_L.Insert(true);
+        // Message('%1 - %2', PurchaseHeader."Document Type", PurchaseHeader."No.");
+    end;
+
+    [EventSubscriber(ObjectType::Table, Database::"Purchase Header", 'OnSendRecordsOnBeforeSendVendorRecords', '', false, false)]
+    local procedure OnSendRecordsOnBeforeSendVendorRecords(ReportUsage: Enum "Report Selection Usage"; var PurchaseHeader: Record "Purchase Header"; DocTxt: Text[150]; var IsHandled: Boolean)
+    var
+        DocPrint: Codeunit "Document-Print";
+    begin
+        PurchaseHeader."Send Date" := Today();
+        PurchaseHeader.Modify();
+        DocPrint.PrintPurchaseHeaderToDocumentAttachment(PurchaseHeader);
     end;
 }

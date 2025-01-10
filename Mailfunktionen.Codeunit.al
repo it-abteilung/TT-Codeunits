@@ -152,7 +152,7 @@ Codeunit 50003 Mailfunktionen
                         // PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"Charge (Item)");    // G-ERP.AG 2020-09-07
                         PurchRcptLine.SetFilter(Type, '%1|%2', PurchRcptLine.Type::Item, PurchRcptLine.Type::"G/L Account");     // TT CN 2023-07-23
                         PurchaseLine.SetRange(Type, PurchaseLine.Type::Item);  // G-ERP.AG 2021-05-17  Anfrage# 2311352
-                        PurchaseLine.SetFilter("No.", '<> %1 | <> %2', '980000', '999900');
+                        PurchaseLine.SetFilter("No.", '<> %1 & <> %2', '980000', '999900');
                         PurchaseLine.SetFilter("Outstanding Quantity", '<>%1', 0);
                         if PurchaseLine.FindSet then begin
                             MailMsg.AppendToBody(StrSubstNo('</br></br><b>Folgende Artikel aus Bestellung %1 wurden nicht geliefert:</b></br></br>', MailTabelle.Key1));
