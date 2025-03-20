@@ -1146,4 +1146,20 @@ Codeunit 50006 "AC Functions"
         PurchaseHeader.Modify();
         DocPrint.PrintPurchaseHeaderToDocumentAttachment(PurchaseHeader);
     end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post", 'OnBeforeCode', '', false, false)]
+    local procedure OnBeforeCode(var ItemJournalLine: Record "Item Journal Line"; var HideDialog: Boolean; var SuppressCommit: Boolean; var IsHandled: Boolean)
+    var
+        ItemJournalComments_L: Record "Item Journal Comment";
+    begin
+        if ItemJournalLine."Short Comment" <> '' then begin
+            ItemJournalComments_L.Init();
+            ItemJournalComments_L."Item No." := ItemJournalLine."Item No.";
+            ItemJournalComments_L."Serial No." := ItemJournalLine."Serial No.";
+            ItemJournalComments_L."Entry Type" := ItemJournalLine."Entry Type";
+            ItemJournalComments_L.Quantity := ItemJournalLine.Quantity;
+            ItemJournalComments_L."Short Comment" := ItemJournalLine."Short Comment";
+            ItemJournalComments_L.Insert();
+        end
+    end;
 }
